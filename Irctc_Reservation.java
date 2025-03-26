@@ -1,4 +1,4 @@
-import java.util.Scanner;
+import java.util.*;
 
 class Train {
     String[] stationName;
@@ -14,25 +14,14 @@ class Train {
     }
 }
 
-class CoachDetails {
-    char coach;
-    int passengers;
-    float price;
+class BookingSystem {
+    public Train[] trains;
+    public int trainIndex;
+    public int fromIndex;
+    public int toIndex;
 
-    public CoachDetails(char coach, int passengers, float price) {
-        this.coach = coach;
-        this.passengers = passengers;
-        this.price = price;
-    }
-}
-
-public class Irctc_Reservation {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-
-        Train[] trains = new Train[2];
-
-        System.out.println("Welcome To My IRCTC Website");
+    public BookingSystem() {
+        trains = new Train[2];
 
         String[] stations1 = { "RAJKOT", "WANKANER", "SURENDRANAGAR", "VIRAMGAM", "AHMEDABAD", "NADIAD", "ANAND",
                 "VADODARA", "ANKLESHWAR", "SURAT", "NAVSARI", "VALSAD", "VAPI", "VASAI", "BHIWANDI", "KALYAN",
@@ -47,14 +36,12 @@ public class Irctc_Reservation {
                 "VADODARA JN" };
         int[] kms2 = { 0, 9, 30, 82, 123, 150, 198, 262, 311, 317, 322, 328, 373, 392, 426 };
         trains[1] = new Train("INTERCITY EXP", 22960, stations2, kms2);
+    }
 
-        System.out.println("Enter From Station: ");
-        String fromStation = sc.nextLine().trim();
-
-        System.out.println("Enter To Station: ");
-        String toStation = sc.nextLine().trim();
-
-        int fromIndex = -1, toIndex = -1, trainIndex = -1;
+    public boolean findTrain(String fromStation, String toStation) {
+        fromIndex = -1;
+        toIndex = -1;
+        trainIndex = -1;
 
         for (int i = 0; i < trains.length; i++) {
             for (int j = 0; j < trains[i].stationName.length; j++) {
@@ -64,81 +51,101 @@ public class Irctc_Reservation {
                 if (fromIndex != -1 && trains[i].stationName[j].equalsIgnoreCase(toStation)) {
                     toIndex = j;
                     trainIndex = i;
-                    break;
+                    System.out.println("Train Found: " + trains[i].trainNo + " " + trains[i].trainName);
+                    return true;
                 }
             }
-            if (fromIndex >= 0 && toIndex >= 0) {
-                System.out.println("Train Found: " + trains[i].trainNo + " " + trains[i].trainName);
-                break;
-            }
         }
+        return false;
+    }
 
-        if (fromIndex == -1 || toIndex == -1) {
-            System.out.println("No train found for the given stations.");
+    public int getFromIndex() { return fromIndex; }
+    public int getToIndex() { return toIndex; }
+    public Train getSelectedTrain() { return trainIndex >= 0 ? trains[trainIndex] : null; }
+}
+
+class CoachDetails {
+    int[] seats = {72, 72, 72, 48, 24};
+
+    public void coachBooking(BookingSystem bookingSystem) {
+        Scanner sc=new Scanner(System.in);
+
+        Train train = bookingSystem.getSelectedTrain();
+        if (train == null) {
+            System.out.println("No valid train found.");
             return;
         }
+        
+        try {
+            System.out.println("S - Sleeper (SL)\nB - 3 Tier AC (3A)\nA - 2 Tier AC (2A)\nH - 1st class AC (1A)");
+            char coach = sc.next().toUpperCase().charAt(0);
+            
+            System.out.println("No. of passengers: ");
+            int passengers = sc.nextInt();
 
-        int s1 = 72, s2 = 72, b1 = 72, a1 = 48, h1 = 24;
+            int fromIndex = bookingSystem.getFromIndex();
+            int toIndex = bookingSystem.getToIndex();
+            int distance = train.distance[toIndex] - train.distance[fromIndex];
+            float price = 0;
 
-        System.out.println("S - Sleeper (SL)\nB - 3 Tier AC (3A)\nA - 2 Tier AC (2A)\nH - 1st class AC (1A)");
-        char coach = sc.next().toUpperCase().charAt(0);
-
-        System.out.println("No. of passengers: ");
-        int passengers = sc.nextInt();
-
-        switch (coach) {
-            case 'S':
-                if (s1 >= passengers) {
-                    float price = (trains[trainIndex].distance[toIndex] - trains[trainIndex].distance[fromIndex]) * passengers * 1;
-                    s1 -= passengers;
-                    System.out.println("Booking successful. Total price: " + price);
-                    CoachDetails person1 = new CoachDetails('S', passengers, price);
-                } else if (s2 >= passengers) {
-                    float price = (trains[trainIndex].distance[toIndex] - trains[trainIndex].distance[fromIndex]) * passengers * 1;
-                    s2 -= passengers;
-                    System.out.println("Booking successful in S2. Total price: " + price);
-                    CoachDetails person1 = new CoachDetails('S', passengers, price);
-                } else {
-                    if (s1 >= 0) {
-                        System.out.println(s1 + " available seats in Sleeper class.");
-                    } else {
-                        System.out.println(s2 + " available seats in Sleeper class.");
-                    }
-                }
-                break;
-            case 'B':
-                if (b1 >= passengers) {
-                    float price = (trains[trainIndex].distance[toIndex] - trains[trainIndex].distance[fromIndex]) * passengers * 2;
-                    b1 -= passengers;
-                    System.out.println("Booking successful. Total price: " + price);
-                    CoachDetails person1 = new CoachDetails('B', passengers, price);
-                } else {
-                    System.out.println(b1 + " available seats in 3 Tier AC.");
-                }
-                break;
-            case 'A':
-                if (a1 >= passengers) {
-                    float price = (trains[trainIndex].distance[toIndex] - trains[trainIndex].distance[fromIndex]) * passengers * 3;
-                    a1 -= passengers;
-                    System.out.println("Booking successful. Total price: " + price);
-                    CoachDetails person1 = new CoachDetails('A', passengers, price);
-                } else {
-                    System.out.println(a1 + " available seats in 2 Tier AC.");
-                }
-                break;
-            case 'H':
-                if (h1 >= passengers) {
-                    float price = (trains[trainIndex].distance[toIndex] - trains[trainIndex].distance[fromIndex]) * passengers * 4;
-                    h1 -= passengers;
-                    System.out.println("Booking successful. Total price: " + price);
-                    CoachDetails person1=new CoachDetails('H',passengers,price);
-                } else {
-                    System.out.println(h1+" available seats in 1st class AC.");
-                }
-                break;
-            default:
-                System.out.println("Enter a valid coach type.");
-                break;
+            switch (coach) {
+                case 'S':
+                    price = processBooking(seats, 0, passengers, distance, 1);
+                    break;
+                case 'B':
+                    price = processBooking(seats, 2, passengers, distance, 2);
+                    break;
+                case 'A':
+                    price = processBooking(seats, 3, passengers, distance, 3);
+                    break;
+                case 'H':
+                    price = processBooking(seats, 4, passengers, distance, 4);
+                    break;
+                default:
+                    System.out.println("Enter a valid coach type.");
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input! Please enter correct data type.");
+            sc.next();
+        } catch (Exception e) {
+            System.out.println("An unexpected error occurred: " + e.getMessage());
         }
     }
-} 
+
+    public float processBooking(int[] seats, int index, int passengers, int distance, int rate) {
+        if (seats[index] >= passengers) {
+            float price = distance * passengers * rate;
+            seats[index] -= passengers;
+            System.out.println("Booking successful. Total price: " + price);
+            return price;
+        } else {
+            System.out.println("Not enough seats available.");
+            return 0;
+        }
+    }
+}
+
+public class Irctc_Reservation {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        BookingSystem bookingSystem = new BookingSystem();
+        
+        try {
+            System.out.println("Enter From Station: ");
+            String fromStation = sc.nextLine().trim();
+            System.out.println("Enter To Station: ");
+            String toStation = sc.nextLine().trim();
+
+            if (bookingSystem.findTrain(fromStation, toStation)) {
+                CoachDetails coachDetails = new CoachDetails();
+                coachDetails.coachBooking(bookingSystem);
+            } else {
+                System.out.println("No train found for the given stations.");
+            }
+        } catch (Exception e) {
+            System.out.println("An error occurred: " + e.getMessage());
+        } finally {
+            sc.close();
+        }
+    }
+}
