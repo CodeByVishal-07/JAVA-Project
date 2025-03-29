@@ -31,22 +31,23 @@ class BookingSystem {
                 1248, 1284, 1299, 1322, 1355, 1465, 1470 };
         trains[0] = new Train("RJT SC SUP EXP", 22717, stations1, kms1);
 
-        String[] stations2 = { "JAMNAGAR", "HAPA", "JAM WANTHALI", "RAJKOT", "WANKANER JN", "THAN JN", "SURENDRANAGAR",
-                "VIRAMGAM", "AMBLI ROAD", "CHANDLODIYA", "SABARMATI JN", "AHMEDABAD JN", "NADIAD JN", "ANAND JN",
-                "VADODARA JN" };
+        String[] stations2 = { "JAMNAGAR", "HAPA", "JAM WANTHALI", "RAJKOT", "WANKANER", "THAN", "SURENDRANAGAR",
+                "VIRAMGAM", "AMBLI ROAD", "CHANDLODIYA", "SABARMATI", "AHMEDABAD", "NADIAD", "ANAND",
+                "VADODARA" };
         int[] kms2 = { 0, 9, 30, 82, 123, 150, 198, 262, 311, 317, 322, 328, 373, 392, 426 };
         trains[1] = new Train("INTERCITY EXP", 22960, stations2, kms2);
     }
 
     public boolean findTrain(String fromStation, String toStation) {
-        fromIndex = -1;
-        toIndex = -1;
         trainIndex = -1;
 
         for (int i = 0; i < trains.length; i++) {
+            fromIndex = -1;
+            toIndex = -1;
             for (int j = 0; j < trains[i].stationName.length; j++) {
-                if (trains[i].stationName[j].equalsIgnoreCase(fromStation)) {
+                if (fromIndex == -1 && trains[i].stationName[j].equalsIgnoreCase(fromStation)) {
                     fromIndex = j;
+                    j++;
                 }
                 if (fromIndex != -1 && trains[i].stationName[j].equalsIgnoreCase(toStation)) {
                     toIndex = j;
@@ -59,27 +60,35 @@ class BookingSystem {
         return false;
     }
 
-    public int getFromIndex() { return fromIndex; }
-    public int getToIndex() { return toIndex; }
-    public Train getSelectedTrain() { return trainIndex >= 0 ? trains[trainIndex] : null; }
+    public int getFromIndex() {
+        return fromIndex;
+    }
+
+    public int getToIndex() {
+        return toIndex;
+    }
+
+    public Train getSelectedTrain() {
+        return trainIndex >= 0 ? trains[trainIndex] : null;
+    }
 }
 
 class CoachDetails {
-    int[] seats = {72, 72, 72, 48, 24};
+    int[] seats = { 72, 72, 72, 48, 24 };
 
     public void coachBooking(BookingSystem bookingSystem) {
-        Scanner sc=new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
 
         Train train = bookingSystem.getSelectedTrain();
         if (train == null) {
             System.out.println("No valid train found.");
             return;
         }
-        
+
         try {
             System.out.println("S - Sleeper (SL)\nB - 3 Tier AC (3A)\nA - 2 Tier AC (2A)\nH - 1st class AC (1A)");
-            char coach = sc.next().toUpperCase().charAt(0);
-            
+            char coach = sc.next().trim().toUpperCase().charAt(0);
+
             System.out.println("No. of passengers: ");
             int passengers = sc.nextInt();
 
@@ -107,8 +116,6 @@ class CoachDetails {
         } catch (InputMismatchException e) {
             System.out.println("Invalid input! Please enter correct data type.");
             sc.next();
-        } catch (Exception e) {
-            System.out.println("An unexpected error occurred: " + e.getMessage());
         }
     }
 
@@ -129,21 +136,33 @@ public class Irctc_Reservation {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         BookingSystem bookingSystem = new BookingSystem();
-        
+
         try {
             System.out.println("Enter From Station: ");
             String fromStation = sc.nextLine().trim();
+
+            if (!fromStation.matches("[a-zA-Z ]+")) {
+                throw new Exception("Please enter a valid station name.");
+            }
+
             System.out.println("Enter To Station: ");
             String toStation = sc.nextLine().trim();
+
+            if (!toStation.matches("[a-zA-Z ]+")) {
+                throw new Exception("Please enter a valid station name.");
+            }
 
             if (bookingSystem.findTrain(fromStation, toStation)) {
                 CoachDetails coachDetails = new CoachDetails();
                 coachDetails.coachBooking(bookingSystem);
-            } else {
+            } else if(fromStation.equals(toStation)){
+                System.out.println("Enter Different Stations");
+            }
+            else{
                 System.out.println("No train found for the given stations.");
             }
         } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         } finally {
             sc.close();
         }
